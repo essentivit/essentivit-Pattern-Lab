@@ -3,52 +3,23 @@
 let canv, col, col2, col3, col4, dec1, dec2, pos, n, size;
 let factor, largest, r1, g1, b1, sF, seed;
 let seedInput, saveButton, generateButton, instructionsLabel;
-
-// Config object to store the initial seed
-let config = {
-  initialSeed: 123456789 // Set this to any seed or leave blank for random seed
-};
+let palette1, palette2, alph;
+let table;
 
 function preload() {
   table = loadTable("colors.csv", "csv", "header");
 }
 
 function setup() {
-  // Create the canvas for PNG generation
-  canv = createCanvas(460, 3142);
+  // Create the canvas for SVG generation
+  canv = createCanvas(460, 3142, SVG);
   background(255); // White background to prevent blank screen
 
   // Ensure that the UI is created before generating the pattern
   createUI();
 
-  // Check the seed input field and apply the logic
-  if (!seedInput || seedInput.value() === "") {
-    if (config.initialSeed && config.initialSeed !== 0) {
-      // Use the initial seed from the config object
-      seed = config.initialSeed;
-      seedInput.value(seed); // Set this seed in the input field
-    } else {
-      generateRandomSeed(); // Generate a random seed if no config initialSeed
-    }
-  } else {
-    seed = int(seedInput.value()); // Use the manually entered seed
-  }
-
-  // Set the random seed for the canvas
-  applySeed();
-
-  factor = 0;
-
-  let numb = floor(random(3, 20));
-  size = width / numb;
-  largest = floor(random(1, 10));
-  alph = random(120, 220);
-  if (random(15) < 1) {
-    alph = 255;
-  }
-  noStroke();
-
-  drawPattern();
+  // Call generatePattern to draw the initial pattern
+  generatePattern();
 }
 
 function applySeed() {
@@ -71,7 +42,7 @@ function createUI() {
   instructionsLabel = createP(
     "Instructions:<br>1. Enter a seed value or leave blank for random.<br>" +
     "2. Press 'Generate' to create the pattern.<br>" +
-    "3. Press 'Save PNG' to save the current pattern.<br>" +
+    "3. Press 'Save SVG' to save the current pattern.<br>" +
     "Note: Deleting the seed will generate a new random seed."
   );
   instructionsLabel.position(10, 40);
@@ -93,18 +64,48 @@ function createUI() {
       // If the seed is entered manually, use that seed
       seed = int(seedInput.value());
     }
-    setup(); // Regenerate the canvas and the pattern with the new or provided seed
+    generatePattern(); // Regenerate the pattern with the new or provided seed
   });
 
   // Save Button
-  saveButton = createButton("Save PNG");
+  saveButton = createButton("Save SVG");
   saveButton.position(350, 10);
-  saveButton.mousePressed(() => saveArt()); // Save the canvas as PNG
+  saveButton.mousePressed(() => saveArt()); // Save the canvas as SVG
+}
+
+function generatePattern() {
+  // Clear the canvas
+  clear();
+  background(255); // White background
+
+  // Check the seed input field and apply the logic
+  if (!seedInput || seedInput.value() === "") {
+    generateRandomSeed(); // Generate a random seed if no seed input
+  } else {
+    seed = int(seedInput.value()); // Use the manually entered seed
+  }
+
+  // Set the random seed for the canvas
+  applySeed();
+
+  factor = 0;
+
+  let numb = floor(random(3, 20));
+  size = width / numb;
+  largest = floor(random(1, 10));
+  alph = random(120, 220);
+  if (random(15) < 1) {
+    alph = 255;
+  }
+  noStroke();
+
+  drawPattern();
 }
 
 function drawPattern() {
-  palette1 = floor(random(2));
-  palette2 = floor(random(2));
+  let numPalettes = table.getRowCount();
+  palette1 = floor(random(numPalettes));
+  palette2 = floor(random(numPalettes));
   r0 = (int(table.get(palette1, 0)) + int(table.get(palette2, 0))) / 2;
   g0 = (int(table.get(palette1, 1)) + int(table.get(palette2, 1))) / 2;
   b0 = (int(table.get(palette1, 2)) + int(table.get(palette2, 2))) / 2;
@@ -116,8 +117,8 @@ function drawShapes() {
   let rez = random(0.003, 0.01);
   factor += 1000;
   sF = 360 / random(2, 40);
-  for (i = width; i > -size * largest; i -= size) {
-    for (j = height; j > -size * largest; j -= size) {
+  for (let i = width; i > -size * largest; i -= size) {
+    for (let j = height; j > -size * largest; j -= size) {
       let n1 = noise(i * rez + factor, j * rez + factor);
       let n2 = noise(i * rez + factor + 10000, j * rez + factor + 10000);
       let n3 = noise(i * rez + factor + 20000, j * rez + factor + 20000);
@@ -181,5 +182,9 @@ function drawShapes() {
 }
 
 function saveArt() {
-  saveCanvas(canv, seed + "_p1_" + palette1 + "_p2_" + palette2, "png");
+  save(seed + "_p1_" + palette1 + "_p2_" + palette2 + ".svg");
+}
+
+function fract(x) {
+  return x - floor(x);
 }
