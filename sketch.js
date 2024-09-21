@@ -2,7 +2,12 @@
 
 let canv, col, col2, col3, col4, dec1, dec2, pos, n, size;
 let factor, largest, r1, g1, b1, sF, seed;
-let seedInput, saveButton, generateButton;
+let seedInput, saveButton, generateButton, instructionsLabel;
+
+// Config object to store the initial seed
+let config = {
+  initialSeed: 123456789 // Set this to any seed or leave blank for random seed
+};
 
 function preload() {
   table = loadTable("colors.csv", "csv", "header");
@@ -11,11 +16,19 @@ function preload() {
 function setup() {
   // Create the canvas for PNG generation
   canv = createCanvas(2000, 2500);
+  background(255); // White background to prevent blank screen
 
-  // Generate or use entered seed
+  // Ensure that the UI is created before generating the pattern
+  createUI();
+
+  // Use the config seed on first load, or generate a new random seed
   if (!seedInput || seedInput.value() === "") {
-    let date = new Date();
-    seed = date.getTime(); // Generate seed based on current time if none provided
+    if (config.initialSeed && config.initialSeed !== 0) {
+      seed = config.initialSeed; // Use the seed from the config
+      seedInput.value(seed); // Populate the input field with the initial seed
+    } else {
+      generateRandomSeed(); // Generate random seed and set it in input
+    }
   } else {
     seed = int(seedInput.value()); // Use manually entered seed
   }
@@ -33,17 +46,28 @@ function setup() {
   }
   noStroke();
 
-  // UI elements
-  createUI();
+  drawPattern();
+}
 
-  noLoop();
-  draw();
+function generateRandomSeed() {
+  let date = new Date();
+  seed = date.getTime(); // Generate random seed based on the current time
+  seedInput.value(seed); // Update the input field with the new random seed
 }
 
 function createUI() {
   // Remove any existing buttons or UI elements
-  let existingElements = selectAll("input, button, label");
+  let existingElements = selectAll("input, button, label, p");
   existingElements.forEach(el => el.remove());
+
+  // UI Instructions
+  instructionsLabel = createP(
+    "Instructions:<br>1. Enter a seed value or leave blank for random.<br>" +
+    "2. Press 'Generate' to create the pattern.<br>" +
+    "3. Press 'Save PNG' to save the current pattern.<br>" +
+    "Note: Deleting the seed will generate a new random seed."
+  );
+  instructionsLabel.position(10, 40);
 
   // Seed input
   let seedLabel = createElement("label", "Seed: ");
@@ -55,7 +79,11 @@ function createUI() {
   generateButton = createButton("Generate");
   generateButton.position(250, 10);
   generateButton.mousePressed(() => {
-    setup(); // Regenerate the canvas and the pattern
+    if (seedInput.value() === "") {
+      // If the input is empty, generate a new random seed
+      generateRandomSeed();
+    }
+    setup(); // Regenerate the canvas and the pattern with the new or provided seed
   });
 
   // Save Button
@@ -64,7 +92,7 @@ function createUI() {
   saveButton.mousePressed(() => saveArt()); // Save the canvas as PNG
 }
 
-function draw() {
+function drawPattern() {
   palette1 = floor(random(2));
   palette2 = floor(random(2));
   r0 = (int(table.get(palette1, 0)) + int(table.get(palette2, 0))) / 2;
