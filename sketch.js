@@ -15,26 +15,28 @@ function preload() {
 
 function setup() {
   // Create the canvas for PNG generation
-  canv = createCanvas(2000, 2500);
+  canv = createCanvas(460, 3142);
   background(255); // White background to prevent blank screen
 
   // Ensure that the UI is created before generating the pattern
   createUI();
 
-  // Use the config seed on first load, or generate a new random seed
+  // Check the seed input field and apply the logic
   if (!seedInput || seedInput.value() === "") {
     if (config.initialSeed && config.initialSeed !== 0) {
-      seed = config.initialSeed; // Use the seed from the config
-      seedInput.value(seed); // Populate the input field with the initial seed
+      // Use the initial seed from the config object
+      seed = config.initialSeed;
+      seedInput.value(seed); // Set this seed in the input field
     } else {
-      generateRandomSeed(); // Generate random seed and set it in input
+      generateRandomSeed(); // Generate a random seed if no config initialSeed
     }
   } else {
-    seed = int(seedInput.value()); // Use manually entered seed
+    seed = int(seedInput.value()); // Use the manually entered seed
   }
 
-  randomSeed(seed);
-  noiseSeed(seed);
+  // Set the random seed for the canvas
+  applySeed();
+
   factor = 0;
 
   let numb = floor(random(3, 20));
@@ -47,6 +49,11 @@ function setup() {
   noStroke();
 
   drawPattern();
+}
+
+function applySeed() {
+  randomSeed(seed);
+  noiseSeed(seed);
 }
 
 function generateRandomSeed() {
@@ -82,6 +89,9 @@ function createUI() {
     if (seedInput.value() === "") {
       // If the input is empty, generate a new random seed
       generateRandomSeed();
+    } else {
+      // If the seed is entered manually, use that seed
+      seed = int(seedInput.value());
     }
     setup(); // Regenerate the canvas and the pattern with the new or provided seed
   });
