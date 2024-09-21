@@ -35,7 +35,7 @@ function generateRandomSeed() {
 
 function createUI() {
   // Remove any existing buttons or UI elements
-  let existingElements = selectAll("input, button, label, p");
+  let existingElements = selectAll("input, button, label, p, img");
   existingElements.forEach(el => el.remove());
 
   // Add modern styles to body
@@ -59,7 +59,14 @@ function createUI() {
   uiContainer.style('z-index', '1000');   // Ensure it's on top of other elements
 
   // Add some margin for the content below, so it doesn't overlap with the fixed UI
-  select('body').style('padding-top', '100px');
+  select('body').style('padding-top', '150px');
+
+  // Add the EssentiVit logo to the UI
+  let logo = createImg('https://essentivit.com/wp-content/uploads/2023/04/essentivit-logo-transparent.png', 'EssentiVit Logo');
+  logo.style('width', '150px');  // Adjust logo size as necessary
+  logo.style('display', 'block');
+  logo.style('margin', '0 auto 20px auto');  // Center the logo with margin at the bottom
+  logo.parent(uiContainer);  // Attach to UI container
 
   // UI Instructions
   instructionsLabel = createP(
@@ -137,6 +144,7 @@ function createUI() {
   versionLabel.style('font-weight', 'bold');
   versionLabel.parent(uiContainer);
 }
+
 
 function generatePattern() {
   // Clear the canvas
