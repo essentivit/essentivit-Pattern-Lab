@@ -128,8 +128,15 @@ function createUI() {
   saveButton.mouseOut(() => saveButton.style('background-color', '#007BFF'));
   saveButton.parent(buttonContainer);
   saveButton.mousePressed(() => saveArt());
-}
 
+  // Version label displayed under the buttons
+  let versionLabel = createP("Version: v1.0.0");
+  versionLabel.style('font-size', '14px');
+  versionLabel.style('color', '#777');
+  versionLabel.style('margin-top', '10px');
+  versionLabel.style('font-weight', 'bold');
+  versionLabel.parent(uiContainer);
+}
 
 function generatePattern() {
   // Clear the canvas
