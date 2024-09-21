@@ -1,26 +1,29 @@
-/* The Essential Vitamin / essentiVit branding generator
-*/
+/* The Essential Vitamin / essentiVit branding generator */
 
 let canv, col, col2, col3, col4, dec1, dec2, pos, n, size;
-let factor;
-let largest;
-let r1, g1, b1, sF, seed;
+let factor, largest, r1, g1, b1, sF, seed;
+let seedInput, saveButton, generateButton;
 
 function preload() {
   table = loadTable("colors.csv", "csv", "header");
 }
 
 function setup() {
-  //canv = createCanvas(windowHeight - 300, windowHeight - 870);
-  canv = createCanvas(2000, 2500,SVG);
-  canv.mousePressed(setup);
-  let date = new Date();
-  seed = date.getTime();
-  // Specify seed below for same result
-  //seed = 90484229248 
+  // Create the canvas for PNG generation
+  canv = createCanvas(2000, 2500);
+
+  // Generate or use entered seed
+  if (!seedInput || seedInput.value() === "") {
+    let date = new Date();
+    seed = date.getTime(); // Generate seed based on current time if none provided
+  } else {
+    seed = int(seedInput.value()); // Use manually entered seed
+  }
+
   randomSeed(seed);
   noiseSeed(seed);
   factor = 0;
+
   let numb = floor(random(3, 20));
   size = width / numb;
   largest = floor(random(1, 10));
@@ -29,11 +32,36 @@ function setup() {
     alph = 255;
   }
   noStroke();
-  let saveButton = createButton("save svg");
-  saveButton.position(10, height + 25);
-  saveButton.mousePressed(saveArt);
+
+  // UI elements
+  createUI();
+
   noLoop();
   draw();
+}
+
+function createUI() {
+  // Remove any existing buttons or UI elements
+  let existingElements = selectAll("input, button, label");
+  existingElements.forEach(el => el.remove());
+
+  // Seed input
+  let seedLabel = createElement("label", "Seed: ");
+  seedLabel.position(10, 10);
+  seedInput = createInput(seed ? seed.toString() : "");
+  seedInput.position(60, 10);
+
+  // Generate Button
+  generateButton = createButton("Generate");
+  generateButton.position(250, 10);
+  generateButton.mousePressed(() => {
+    setup(); // Regenerate the canvas and the pattern
+  });
+
+  // Save Button
+  saveButton = createButton("Save PNG");
+  saveButton.position(350, 10);
+  saveButton.mousePressed(() => saveArt()); // Save the canvas as PNG
 }
 
 function draw() {
@@ -43,7 +71,6 @@ function draw() {
   g0 = (int(table.get(palette1, 1)) + int(table.get(palette2, 1))) / 2;
   b0 = (int(table.get(palette1, 2)) + int(table.get(palette2, 2))) / 2;
   background(r0, g0, b0);
-  print('Palette1:',palette1, 'Palette2:',palette2);
   drawShapes();
 }
 
@@ -53,9 +80,9 @@ function drawShapes() {
   sF = 360 / random(2, 40);
   for (i = width; i > -size * largest; i -= size) {
     for (j = height; j > -size * largest; j -= size) {
-      n1 = noise(i * rez + factor, j * rez + factor);
-      n2 = noise(i * rez + factor + 10000, j * rez + factor + 10000);
-      n3 = noise(i * rez + factor + 20000, j * rez + factor + 20000);
+      let n1 = noise(i * rez + factor, j * rez + factor);
+      let n2 = noise(i * rez + factor + 10000, j * rez + factor + 10000);
+      let n3 = noise(i * rez + factor + 20000, j * rez + factor + 20000);
       let col3;
       let col1 = map(n1, 0, 1, 0, 360);
       let col2 = map(n2, 0, 1, 0, 360);
@@ -116,5 +143,5 @@ function drawShapes() {
 }
 
 function saveArt() {
-  save(seed + "_p1_" + palette1 + "_p2_" + palette2 + ".svg");
+  saveCanvas(canv, seed + "_p1_" + palette1 + "_p2_" + palette2, "png");
 }
