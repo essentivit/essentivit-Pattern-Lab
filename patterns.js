@@ -1,26 +1,31 @@
-/* File: patterns.js */
-
 // Draw the standard essential vitamin pattern
-function drawEssentialPattern(table, size, largest, alph, factor, palette1, palette2) {
-    // Calculate the background color based on selected palettes
-    let r0 = (int(table.get(palette1, 0)) + int(table.get(palette2, 0))) / 2;
-    let g0 = (int(table.get(palette1, 1)) + int(table.get(palette2, 1))) / 2;
-    let b0 = (int(table.get(palette1, 2)) + int(table.get(palette2, 2))) / 2;
+function drawEssentialPattern(palettes, size, largest, alph, factor, palette1Index, palette2Index) {
+    // Get the selected palettes
+    let palette1 = palettes.palettes[palette1Index].colors;
+    let palette2 = palettes.palettes[palette2Index].colors;
+  
+    // Calculate the background color using the first color in both palettes
+    let r0 = (palette1[0][0] + palette2[0][0]) / 2;
+    let g0 = (palette1[0][1] + palette2[0][1]) / 2;
+    let b0 = (palette1[0][2] + palette2[0][2]) / 2;
     background(r0, g0, b0);
-    
-    // Call the function to draw the shapes, passing all necessary variables
-    drawEssentialShapes(table, palette1, palette2, size, largest, alph, factor);
+  
+    // Now call the function to draw the shapes, passing all necessary variables
+    drawEssentialShapes(palettes, palette1Index, palette2Index, size, largest, alph, factor);
   }
   
   // Attach the function to the window object
   window.drawEssentialPattern = drawEssentialPattern;
   
   // Draw the shapes for the standard pattern
-  function drawEssentialShapes(table, palette1, palette2, size, largest, alph, factor) {
+  function drawEssentialShapes(palettes, palette1Index, palette2Index, size, largest, alph, factor) {
+    let palette1 = palettes.palettes[palette1Index].colors;
+    let palette2 = palettes.palettes[palette2Index].colors;
+  
     let rez = random(0.003, 0.01);
     factor += 1000;
     let sF = 360 / random(2, 40);
-    
+  
     for (let i = width; i > -size * largest; i -= size) {
       for (let j = height; j > -size * largest; j -= size) {
         let n1 = noise(i * rez + factor, j * rez + factor);
@@ -31,16 +36,17 @@ function drawEssentialPattern(table, size, largest, alph, factor, palette1, pale
         let col2 = map(n2, 0, 1, 0, 360);
         let dec1 = fract(col1 / sF);
         let dec2 = fract(col2 / sF);
-        
+  
         let col3 = getColorCategory(dec1);
         let col4 = getColorCategory(dec2);
   
-        let r1 = table.get(palette1, col3 * 3);
-        let g1 = table.get(palette1, col3 * 3 + 1);
-        let b1 = table.get(palette1, col3 * 3 + 2);
-        let r2 = table.get(palette2, col4 * 3);
-        let g2 = table.get(palette2, col4 * 3 + 1);
-        let b2 = table.get(palette2, col4 * 3 + 2);
+        let r1 = palette1[col3][0];
+        let g1 = palette1[col3][1];
+        let b1 = palette1[col3][2];
+        let r2 = palette2[col4][0];
+        let g2 = palette2[col4][1];
+        let b2 = palette2[col4][2];
+  
         let size2 = size * floor(random(1, largest));
   
         drawTriangles(i, j, size2, n3, r1, g1, b1, r2, g2, b2, alph);
@@ -82,21 +88,20 @@ function drawEssentialPattern(table, size, largest, alph, factor, palette1, pale
     }
   }
   
-  // Helper function equivalent to the fract function in sketch.js
-  function fract(x) {
-    return x - floor(x);
-  }
-  
   // Draw the Pet Supplement pattern
-  function drawPetPattern(table, size, largest, alph, factor, palette1, palette2) {
-    // Calculate the background color based on selected palettes
-    let r0 = (int(table.get(palette1, 0)) + int(table.get(palette2, 0))) / 2;
-    let g0 = (int(table.get(palette1, 1)) + int(table.get(palette2, 1))) / 2;
-    let b0 = (int(table.get(palette1, 2)) + int(table.get(palette2, 2))) / 2;
+  function drawPetPattern(palettes, size, largest, alph, factor, palette1Index, palette2Index) {
+    // Get the selected palettes
+    let palette1 = palettes.palettes[palette1Index].colors;
+    let palette2 = palettes.palettes[palette2Index].colors;
+  
+    // Calculate the background color using the first color in both palettes
+    let r0 = (palette1[0][0] + palette2[0][0]) / 2;
+    let g0 = (palette1[0][1] + palette2[0][1]) / 2;
+    let b0 = (palette1[0][2] + palette2[0][2]) / 2;
     background(r0, g0, b0);
   
     // Call the function to draw the shapes, passing all necessary variables
-    drawPetShapes(table, palette1, palette2, size, largest, alph, factor);
+    drawPetShapes(palettes, palette1Index, palette2Index, size, largest, alph, factor);
   
     // Draw the overlay paw
     drawOverlayPaw(alph);
@@ -106,7 +111,10 @@ function drawEssentialPattern(table, size, largest, alph, factor, palette1, pale
   window.drawPetPattern = drawPetPattern;
   
   // Draw the shapes for the pet pattern
-  function drawPetShapes(table, palette1, palette2, size, largest, alph, factor) {
+  function drawPetShapes(palettes, palette1Index, palette2Index, size, largest, alph, factor) {
+    let palette1 = palettes.palettes[palette1Index].colors;
+    let palette2 = palettes.palettes[palette2Index].colors;
+  
     let rez = random(0.003, 0.01);
     factor += 1000;
     let sF = 360 / random(2, 40);
@@ -128,12 +136,12 @@ function drawEssentialPattern(table, size, largest, alph, factor, palette1, pale
         let col3 = getColorCategory(dec1);
         let col4 = getColorCategory(dec2);
   
-        let r1 = table.get(palette1, col3 * 3);
-        let g1 = table.get(palette1, col3 * 3 + 1);
-        let b1 = table.get(palette1, col3 * 3 + 2);
-        let r2 = table.get(palette2, col4 * 3);
-        let g2 = table.get(palette2, col4 * 3 + 1);
-        let b2 = table.get(palette2, col4 * 3 + 2);
+        let r1 = palette1[col3][0];
+        let g1 = palette1[col3][1];
+        let b1 = palette1[col3][2];
+        let r2 = palette2[col4][0];
+        let g2 = palette2[col4][1];
+        let b2 = palette2[col4][2];
   
         let size2 = size * floor(random(1, largest));
   
