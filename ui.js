@@ -1,4 +1,6 @@
-let seedInput, saveButton, generateButton, instructionsLabel;
+/* File: ui.js */
+
+let seedInput, saveButton, generateButton, instructionsLabel, patternSelect;
 
 function createUI() {
   // Remove any existing buttons or UI elements
@@ -63,6 +65,24 @@ function createUI() {
   seedInput.style('border', '1px solid #ccc');
   seedInput.parent(seedContainer);
 
+  // Pattern selection container
+  let patternContainer = createDiv().style('margin-bottom', '20px');
+  patternContainer.parent(uiContainer);
+
+  // Pattern Label and Dropdown
+  let patternLabel = createElement("label", "Pattern: ");
+  patternLabel.style('font-weight', 'bold');
+  patternLabel.parent(patternContainer);
+
+  patternSelect = createSelect();
+  patternSelect.option('Essential Vitamin');
+  // Future: Add option for Pet Supplement Pattern
+  patternSelect.style('padding', '10px');
+  patternSelect.style('margin-left', '10px');
+  patternSelect.style('border-radius', '4px');
+  patternSelect.style('border', '1px solid #ccc');
+  patternSelect.parent(patternContainer);
+
   // Button container
   let buttonContainer = createDiv().style('display', 'flex').style('justify-content', 'center');
   buttonContainer.style('gap', '15px');
@@ -86,7 +106,12 @@ function createUI() {
     } else {
       seed = int(seedInput.value());
     }
-    window.generatePattern();  // Function from sketch.js
+
+    let selectedPattern = patternSelect.value();
+    if (selectedPattern === 'Essential Vitamin') {
+      window.generatePattern();  // Currently only supports the essential pattern
+    }
+    // Future: Add condition for Pet Supplement Pattern
   });
 
   // Save Button
