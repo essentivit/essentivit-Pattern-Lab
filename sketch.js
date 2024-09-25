@@ -4,7 +4,6 @@
 
 let canv, size, largest, seed = 0;
 let palette1, palette2, alph;
-let table;
 
 let palettes; // This will store the palettes from JSON
 
@@ -17,14 +16,16 @@ function preload() {
   });
 }
 
-
 function setup() {
   // Create the canvas for SVG generation
   canv = createCanvas(460, 3142, SVG);
   background(255); // White background to prevent blank screen
 
   // Ensure that the UI is created before generating the pattern
-  createUI();  // Moved to ui.js
+  createUI();  // Defined in ui.js
+
+  // Generate a random seed and update the seed input field
+  generateRandomSeed();
 
   // Call generatePattern to draw the initial pattern with default pattern type
   generatePattern('essential');
@@ -39,13 +40,6 @@ function generatePattern(patternType) {
   // Clear the canvas
   clear();
   background(255); // White background
-
-  // Check the seed input field and apply the logic
-  if (!seedInput || seedInput.value() === "") {
-    generateRandomSeed(); // Generate a random seed if no seed input
-  } else {
-    seed = int(seedInput.value()); // Use the manually entered seed
-  }
 
   // Set the random seed for the canvas
   applySeed();
@@ -83,11 +77,22 @@ function generatePattern(patternType) {
   }
 }
 
-
 function saveArt() {
   save(seed + "_p1_" + palette1 + "_p2_" + palette2 + ".svg");
+}
+
+// Moved generateRandomSeed to sketch.js and exposed it globally
+function generateRandomSeed() {
+  let date = new Date();
+  seed = date.getTime(); // Generate random seed based on the current time
+
+  // Update the seed input field if it exists
+  if (window.UIElements && window.UIElements.seedInput) {
+    window.UIElements.seedInput.value(seed);
+  }
 }
 
 // Ensure global access to functions for ui.js
 window.generatePattern = generatePattern;
 window.saveArt = saveArt;
+window.generateRandomSeed = generateRandomSeed;

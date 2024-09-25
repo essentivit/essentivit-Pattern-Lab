@@ -1,17 +1,43 @@
 /* File: ui.js */
 
-let seedInput, saveButton, generateButton, instructionsLabel, patternSelect;
+// Object to hold UI elements
+const UIElements = {
+  seedInput: null,
+  saveButton: null,
+  generateButton: null,
+  instructionsLabel: null,
+  patternSelect: null,
+  uiContainer: null,
+};
 
+// Main function to create the UI
 function createUI() {
-  // Remove any existing buttons or UI elements
+  removeExistingElements();
+  styleBody();
+  UIElements.uiContainer = createUIContainer();
+  adjustBodyPadding();
+  createLogo(UIElements.uiContainer);
+  createInstructions(UIElements.uiContainer);
+  createSeedInput(UIElements.uiContainer);
+  createPatternSelect(UIElements.uiContainer);
+  createButtons(UIElements.uiContainer);
+  fetchAndDisplayVersion(UIElements.uiContainer);
+}
+
+// Function to remove existing UI elements
+function removeExistingElements() {
   let existingElements = selectAll("input, button, label, p, img");
   existingElements.forEach(el => el.remove());
+}
 
-  // Add modern styles to body
+// Function to style the body element
+function styleBody() {
   select('body').style('font-family', 'Roboto, sans-serif');
-  select('body').style('background-color', '#f0f2f5'); // Softer background color for better contrast
+  select('body').style('background-color', '#f0f2f5');
+}
 
-  // UI Container
+// Function to create the main UI container
+function createUIContainer() {
   let uiContainer = createDiv().id('ui-container');
   uiContainer.style('background-color', '#ffffff');
   uiContainer.style('padding', '30px');
@@ -19,126 +45,155 @@ function createUI() {
   uiContainer.style('border-radius', '12px');
   uiContainer.style('width', '100%');
   uiContainer.style('max-width', '500px');
-  uiContainer.style('margin', '0 auto');  // Center horizontally
+  uiContainer.style('margin', '0 auto');
   uiContainer.style('text-align', 'center');
-  uiContainer.style('position', 'fixed'); // Keep the UI fixed at the top
-  uiContainer.style('top', '0');          // Stick to the top of the page
+  uiContainer.style('position', 'fixed');
+  uiContainer.style('top', '0');
   uiContainer.style('left', '0');
   uiContainer.style('right', '0');
-  uiContainer.style('z-index', '1000');   // Ensure it's on top of other elements
+  uiContainer.style('z-index', '1000');
+  return uiContainer;
+}
 
-  // Add some margin for the content below, so it doesn't overlap with the fixed UI
+// Function to adjust body padding to accommodate the fixed UI
+function adjustBodyPadding() {
   select('body').style('padding-top', '200px');
+}
 
-  // Add the EssentiVit logo to the UI
-  let logo = createImg('https://essentivit.com/wp-content/uploads/2023/04/essentivit-logo-transparent.png', 'EssentiVit Logo');
-  logo.style('width', '120px');  // Slightly smaller logo for balance
+// Function to create and style the logo
+function createLogo(parent) {
+  let logo = createImg(
+    'https://essentivit.com/wp-content/uploads/2023/04/essentivit-logo-transparent.png',
+    'EssentiVit Logo'
+  );
+  logo.style('width', '120px');
   logo.style('display', 'block');
-  logo.style('margin', '0 auto 15px auto');  // Center the logo with margin at the bottom
-  logo.parent(uiContainer);  // Attach to UI container
+  logo.style('margin', '0 auto 15px auto');
+  logo.parent(parent);
+}
 
-  // UI Instructions
-  instructionsLabel = createP(
+// Function to create and style the instructions label
+function createInstructions(parent) {
+  UIElements.instructionsLabel = createP(
     "Instructions:<br>1. Enter a seed value or leave blank for random.<br>" +
     "2. Select a pattern from the dropdown.<br>" +
     "3. Press 'Generate' to create the pattern.<br>" +
     "4. Press 'Save SVG' to save the current pattern.<br>" +
     "Note: Deleting the seed will generate a new random seed."
   );
-  instructionsLabel.style('font-size', '16px');  // Slightly larger font for readability
-  instructionsLabel.style('color', '#4a4a4a');   // Softer gray color
-  instructionsLabel.style('line-height', '1.8');
-  instructionsLabel.style('margin-bottom', '25px');
-  instructionsLabel.parent(uiContainer);
+  UIElements.instructionsLabel.style('font-size', '16px');
+  UIElements.instructionsLabel.style('color', '#4a4a4a');
+  UIElements.instructionsLabel.style('line-height', '1.8');
+  UIElements.instructionsLabel.style('margin-bottom', '25px');
+  UIElements.instructionsLabel.parent(parent);
+}
 
-  // Seed input container
+// Function to create and style the seed input field
+function createSeedInput(parent) {
   let seedContainer = createDiv().style('margin-bottom', '20px');
-  seedContainer.parent(uiContainer);
+  seedContainer.parent(parent);
 
-  // Seed Label and Input
   let seedLabel = createElement("label", "Seed: ");
-  seedLabel.style('font-weight', '600');    // Slightly bolder font for labels
+  seedLabel.style('font-weight', '600');
   seedLabel.style('font-size', '14px');
   seedLabel.parent(seedContainer);
 
-  seedInput = createInput(seed ? seed.toString() : "");
-  seedInput.style('padding', '12px');
-  seedInput.style('margin-left', '10px');
-  seedInput.style('border-radius', '6px');
-  seedInput.style('border', '1px solid #ccc');
-  seedInput.style('width', '80%');
-  seedInput.parent(seedContainer);
+  UIElements.seedInput = createInput(seed ? seed.toString() : "");
+  UIElements.seedInput.style('padding', '12px');
+  UIElements.seedInput.style('margin-left', '10px');
+  UIElements.seedInput.style('border-radius', '6px');
+  UIElements.seedInput.style('border', '1px solid #ccc');
+  UIElements.seedInput.style('width', '80%');
+  UIElements.seedInput.parent(seedContainer);
+}
 
-  // Pattern selection container
+// Function to create and style the pattern selection dropdown
+function createPatternSelect(parent) {
   let patternContainer = createDiv().style('margin-bottom', '20px');
-  patternContainer.parent(uiContainer);
+  patternContainer.parent(parent);
 
-  // Pattern Label and Dropdown
   let patternLabel = createElement("label", "Pattern: ");
   patternLabel.style('font-weight', '600');
   patternLabel.style('font-size', '14px');
   patternLabel.parent(patternContainer);
 
-  patternSelect = createSelect();
-  patternSelect.option('Standard'); // Updated option name
-  patternSelect.option('Pet');      // Updated option name
-  patternSelect.style('padding', '12px');
-  patternSelect.style('margin-left', '10px');
-  patternSelect.style('border-radius', '6px');
-  patternSelect.style('border', '1px solid #ccc');
-  patternSelect.style('width', '80%');
-  patternSelect.parent(patternContainer);
+  UIElements.patternSelect = createSelect();
+  UIElements.patternSelect.option('Standard');
+  UIElements.patternSelect.option('Pet');
+  UIElements.patternSelect.style('padding', '12px');
+  UIElements.patternSelect.style('margin-left', '10px');
+  UIElements.patternSelect.style('border-radius', '6px');
+  UIElements.patternSelect.style('border', '1px solid #ccc');
+  UIElements.patternSelect.style('width', '80%');
+  UIElements.patternSelect.parent(patternContainer);
+}
 
-  // Button container
-  let buttonContainer = createDiv().style('display', 'flex').style('justify-content', 'center');
+// Function to create and style the generate and save buttons
+function createButtons(parent) {
+  let buttonContainer = createDiv()
+    .style('display', 'flex')
+    .style('justify-content', 'center');
   buttonContainer.style('gap', '20px');
-  buttonContainer.style('margin-top', '20px');  // Add more space above buttons
-  buttonContainer.parent(uiContainer);
+  buttonContainer.style('margin-top', '20px');
+  buttonContainer.parent(parent);
 
   // Generate Button
-  generateButton = createButton("Generate");
-  generateButton.style('padding', '12px 30px'); // Increase padding for larger touch targets
-  generateButton.style('background-color', '#4CAF50');
-  generateButton.style('border', 'none');
-  generateButton.style('border-radius', '6px');
-  generateButton.style('color', '#fff');
-  generateButton.style('font-weight', '600');
-  generateButton.style('cursor', 'pointer');
-  generateButton.style('transition', 'background-color 0.3s ease'); // Smooth hover transition
-  generateButton.mouseOver(() => generateButton.style('background-color', '#45a049'));
-  generateButton.mouseOut(() => generateButton.style('background-color', '#4CAF50'));
-  generateButton.parent(buttonContainer);
-  generateButton.mousePressed(() => {
-    if (seedInput.value() === "") {
-      generateRandomSeed();
-    } else {
-      seed = int(seedInput.value());
-    }
-
-    let selectedPattern = patternSelect.value();
-    if (selectedPattern === 'Standard') {  // Updated pattern check
-      window.generatePattern('essential');  // Still passing 'essential' internally
-    } else if (selectedPattern === 'Pet') {  // Updated pattern check
-      window.generatePattern('pet');
-    }
-  });
+  UIElements.generateButton = createButton("Generate");
+  UIElements.generateButton.style('padding', '12px 30px');
+  UIElements.generateButton.style('background-color', '#4CAF50');
+  UIElements.generateButton.style('border', 'none');
+  UIElements.generateButton.style('border-radius', '6px');
+  UIElements.generateButton.style('color', '#fff');
+  UIElements.generateButton.style('font-weight', '600');
+  UIElements.generateButton.style('cursor', 'pointer');
+  UIElements.generateButton.style('transition', 'background-color 0.3s ease');
+  UIElements.generateButton.mouseOver(() =>
+    UIElements.generateButton.style('background-color', '#45a049')
+  );
+  UIElements.generateButton.mouseOut(() =>
+    UIElements.generateButton.style('background-color', '#4CAF50')
+  );
+  UIElements.generateButton.parent(buttonContainer);
+  UIElements.generateButton.mousePressed(handleGenerateButtonPress);
 
   // Save Button
-  saveButton = createButton("Save SVG");
-  saveButton.style('padding', '12px 30px');
-  saveButton.style('background-color', '#007BFF');
-  saveButton.style('border', 'none');
-  saveButton.style('border-radius', '6px');
-  saveButton.style('color', '#fff');
-  saveButton.style('font-weight', '600');
-  saveButton.style('cursor', 'pointer');
-  saveButton.style('transition', 'background-color 0.3s ease');  // Smooth hover transition
-  saveButton.mouseOver(() => saveButton.style('background-color', '#0056b3'));
-  saveButton.mouseOut(() => saveButton.style('background-color', '#007BFF'));
-  saveButton.parent(buttonContainer);
-  saveButton.mousePressed(() => window.saveArt());  // Function from sketch.js
+  UIElements.saveButton = createButton("Save SVG");
+  UIElements.saveButton.style('padding', '12px 30px');
+  UIElements.saveButton.style('background-color', '#007BFF');
+  UIElements.saveButton.style('border', 'none');
+  UIElements.saveButton.style('border-radius', '6px');
+  UIElements.saveButton.style('color', '#fff');
+  UIElements.saveButton.style('font-weight', '600');
+  UIElements.saveButton.style('cursor', 'pointer');
+  UIElements.saveButton.style('transition', 'background-color 0.3s ease');
+  UIElements.saveButton.mouseOver(() =>
+    UIElements.saveButton.style('background-color', '#0056b3')
+  );
+  UIElements.saveButton.mouseOut(() =>
+    UIElements.saveButton.style('background-color', '#007BFF')
+  );
+  UIElements.saveButton.parent(buttonContainer);
+  UIElements.saveButton.mousePressed(() => window.saveArt());
+}
 
-  // Fetch and display version from version.json
+// Event handler for the generate button
+function handleGenerateButtonPress() {
+  if (UIElements.seedInput.value() === "") {
+    window.generateRandomSeed();
+  } else {
+    seed = int(UIElements.seedInput.value());
+  }
+
+  let selectedPattern = UIElements.patternSelect.value();
+  if (selectedPattern === 'Standard') {
+    window.generatePattern('essential');
+  } else if (selectedPattern === 'Pet') {
+    window.generatePattern('pet');
+  }
+}
+
+// Function to fetch and display the version information
+function fetchAndDisplayVersion(parent) {
   fetch('/version.json')
     .then(response => response.json())
     .then(data => {
@@ -147,15 +202,12 @@ function createUI() {
       versionLabel.style('color', '#777');
       versionLabel.style('margin-top', '10px');
       versionLabel.style('font-weight', 'bold');
-      versionLabel.parent(uiContainer);
+      versionLabel.parent(parent);
     })
     .catch(err => {
       console.error('Error fetching version:', err);
     });
 }
 
-function generateRandomSeed() {
-  let date = new Date();
-  seed = date.getTime(); // Generate random seed based on the current time
-  seedInput.value(seed); // Update the input field with the new random seed
-}
+// Expose UIElements globally
+window.UIElements = UIElements;
