@@ -21,9 +21,15 @@ function createUI() {
   createInstructions(UIElements.uiContainer);
   createSeedInput(UIElements.uiContainer);
   createPatternSelect(UIElements.uiContainer);
-  createSizeSelect(UIElements.uiContainer); // Updated to use config
+  createSizeSelect(UIElements.uiContainer);
+  createPaletteSelect(UIElements.uiContainer);  // Palette 1 dropdown
+  createPalette2Select(UIElements.uiContainer); // Palette 2 dropdown
   createButtons(UIElements.uiContainer);
   fetchAndDisplayVersion(UIElements.uiContainer);
+
+  // Display swatches for the initially selected palettes
+  updatePaletteSwatch('palette1', UIElements.paletteSelect.value());
+  updatePaletteSwatch('palette2', UIElements.palette2Select.value());
 }
 
 // Function to remove existing UI elements
@@ -237,6 +243,88 @@ function fetchAndDisplayVersion(parent) {
     .catch(err => {
       console.error('Error fetching version:', err);
     });
+}
+
+// Function to create and style the palette selection dropdown with swatches
+function createPaletteSelect(parent) {
+  let paletteContainer = createDiv().style('margin-bottom', '20px');
+  paletteContainer.parent(parent);
+
+  let paletteLabel = createElement("label", "Palette 1: ");
+  paletteLabel.style('font-weight', '600');
+  paletteLabel.style('font-size', '14px');
+  paletteLabel.parent(paletteContainer);
+
+  UIElements.paletteSelect = createSelect();
+  UIElements.paletteSelect.style('padding', '12px');
+  UIElements.paletteSelect.style('margin-left', '10px');
+  UIElements.paletteSelect.style('border-radius', '6px');
+  UIElements.paletteSelect.style('border', '1px solid #ccc');
+  UIElements.paletteSelect.style('width', '80%');
+  UIElements.paletteSelect.parent(paletteContainer);
+
+  // Create a div to hold the colour swatches
+  UIElements.palette1SwatchContainer = createDiv().style('margin-top', '10px');
+  UIElements.palette1SwatchContainer.parent(paletteContainer);
+
+  // Populate the dropdown options from the palettes JSON
+  for (let palette of palettes.palettes) {
+    UIElements.paletteSelect.option(palette.name);
+  }
+
+  // Add an event listener to update swatches when palette is selected
+  UIElements.paletteSelect.changed(() => updatePaletteSwatch('palette1', UIElements.paletteSelect.value()));
+}
+
+// Function to create and style the second palette selection dropdown with swatches
+function createPalette2Select(parent) {
+  let palette2Container = createDiv().style('margin-bottom', '20px');
+  palette2Container.parent(parent);
+
+  let palette2Label = createElement("label", "Palette 2: ");
+  palette2Label.style('font-weight', '600');
+  palette2Label.style('font-size', '14px');
+  palette2Label.parent(palette2Container);
+
+  UIElements.palette2Select = createSelect();
+  UIElements.palette2Select.style('padding', '12px');
+  UIElements.palette2Select.style('margin-left', '10px');
+  UIElements.palette2Select.style('border-radius', '6px');
+  UIElements.palette2Select.style('border', '1px solid #ccc');
+  UIElements.palette2Select.style('width', '80%');
+  UIElements.palette2Select.parent(palette2Container);
+
+  // Create a div to hold the colour swatches
+  UIElements.palette2SwatchContainer = createDiv().style('margin-top', '10px');
+  UIElements.palette2SwatchContainer.parent(palette2Container);
+
+  // Populate the dropdown options from the palettes JSON
+  for (let palette of palettes.palettes) {
+    UIElements.palette2Select.option(palette.name);
+  }
+
+  // Add an event listener to update swatches when palette is selected
+  UIElements.palette2Select.changed(() => updatePaletteSwatch('palette2', UIElements.palette2Select.value()));
+}
+
+// Function to update the colour swatches when a palette is selected
+function updatePaletteSwatch(paletteType, selectedPaletteName) {
+  let selectedPalette = palettes.palettes.find(p => p.name === selectedPaletteName);
+  let swatchContainer = (paletteType === 'palette1') ? UIElements.palette1SwatchContainer : UIElements.palette2SwatchContainer;
+
+  // Clear any existing swatches
+  swatchContainer.html('');
+
+  // Create and append colour swatches
+  selectedPalette.colors.forEach(color => {
+    let swatch = createDiv().style('display', 'inline-block')
+                           .style('width', '20px')
+                           .style('height', '20px')
+                           .style('background-color', `rgb(${color[0]}, ${color[1]}, ${color[2]})`)
+                           .style('margin-right', '5px')
+                           .style('border', '1px solid #ccc');
+    swatch.parent(swatchContainer);
+  });
 }
 
 // Expose UIElements globally

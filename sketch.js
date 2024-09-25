@@ -39,7 +39,6 @@ function applySeed() {
 }
 
 function generatePattern(patternType, canvasSize) {
-  // Get the dimensions from the configuration object
   let dimensions = window.canvasSizes[canvasSize];
   if (!dimensions) {
     console.error(`Canvas size '${canvasSize}' not found in configuration.`);
@@ -66,23 +65,24 @@ function generatePattern(patternType, canvasSize) {
   }
   noStroke();
 
-  // Get the number of palettes in the JSON
-  let numPalettes = palettes.palettes.length;
-  
-  // Randomly select two palettes from the JSON data
-  palette1 = floor(random(numPalettes));
-  palette2 = floor(random(numPalettes));
+  // Get the selected palette names from the UI dropdowns
+  let selectedPalette1Name = UIElements.paletteSelect.value();
+  let selectedPalette2Name = UIElements.palette2Select.value();
+
+  // Find the selected palettes by name from the palettes JSON
+  let palette1Index = palettes.palettes.findIndex(p => p.name === selectedPalette1Name);
+  let palette2Index = palettes.palettes.findIndex(p => p.name === selectedPalette2Name);
 
   // Call the appropriate pattern function based on the selected pattern type
   if (patternType === 'essential') {
     if (typeof window.drawEssentialPattern === 'function') {
-      window.drawEssentialPattern(palettes, size, largest, alph, factor, palette1, palette2);
+      window.drawEssentialPattern(palettes, size, largest, alph, factor, palette1Index, palette2Index);
     } else {
       console.error('drawEssentialPattern is not a function');
     }
   } else if (patternType === 'pet') {
     if (typeof window.drawPetPattern === 'function') {
-      window.drawPetPattern(palettes, size, largest, alph, factor, palette1, palette2);
+      window.drawPetPattern(palettes, size, largest, alph, factor, palette1Index, palette2Index);
     } else {
       console.error('drawPetPattern is not a function');
     }
