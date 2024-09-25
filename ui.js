@@ -8,6 +8,7 @@ const UIElements = {
   instructionsLabel: null,
   patternSelect: null,
   uiContainer: null,
+  sizeSelect: null,
 };
 
 // Main function to create the UI
@@ -20,6 +21,7 @@ function createUI() {
   createInstructions(UIElements.uiContainer);
   createSeedInput(UIElements.uiContainer);
   createPatternSelect(UIElements.uiContainer);
+  createSizeSelect(UIElements.uiContainer); // Updated to use config
   createButtons(UIElements.uiContainer);
   fetchAndDisplayVersion(UIElements.uiContainer);
 }
@@ -77,8 +79,9 @@ function createInstructions(parent) {
   UIElements.instructionsLabel = createP(
     "Instructions:<br>1. Enter a seed value or leave blank for random.<br>" +
     "2. Select a pattern from the dropdown.<br>" +
-    "3. Press 'Generate' to create the pattern.<br>" +
-    "4. Press 'Save SVG' to save the current pattern.<br>" +
+    "3. Select the canvas size.<br>" +
+    "4. Press 'Generate' to create the pattern.<br>" +
+    "5. Press 'Save SVG' to save the current pattern.<br>" +
     "Note: Deleting the seed will generate a new random seed."
   );
   UIElements.instructionsLabel.style('font-size', '16px');
@@ -126,6 +129,30 @@ function createPatternSelect(parent) {
   UIElements.patternSelect.style('border', '1px solid #ccc');
   UIElements.patternSelect.style('width', '80%');
   UIElements.patternSelect.parent(patternContainer);
+}
+
+// Function to create and style the size selection dropdown
+function createSizeSelect(parent) {
+  let sizeContainer = createDiv().style('margin-bottom', '20px');
+  sizeContainer.parent(parent);
+
+  let sizeLabel = createElement("label", "Canvas Size: ");
+  sizeLabel.style('font-weight', '600');
+  sizeLabel.style('font-size', '14px');
+  sizeLabel.parent(sizeContainer);
+
+  UIElements.sizeSelect = createSelect();
+  UIElements.sizeSelect.style('padding', '12px');
+  UIElements.sizeSelect.style('margin-left', '10px');
+  UIElements.sizeSelect.style('border-radius', '6px');
+  UIElements.sizeSelect.style('border', '1px solid #ccc');
+  UIElements.sizeSelect.style('width', '80%');
+  UIElements.sizeSelect.parent(sizeContainer);
+
+  // Populate the dropdown options from the configuration object
+  for (let sizeLabel in window.canvasSizes) {
+    UIElements.sizeSelect.option(sizeLabel);
+  }
 }
 
 // Function to create and style the generate and save buttons
@@ -185,10 +212,13 @@ function handleGenerateButtonPress() {
   }
 
   let selectedPattern = UIElements.patternSelect.value();
+  let selectedSize = UIElements.sizeSelect.value(); // Get selected canvas size
+
+  // Pass selectedSize to generatePattern
   if (selectedPattern === 'Standard') {
-    window.generatePattern('essential');
+    window.generatePattern('essential', selectedSize);
   } else if (selectedPattern === 'Pet') {
-    window.generatePattern('pet');
+    window.generatePattern('pet', selectedSize);
   }
 }
 

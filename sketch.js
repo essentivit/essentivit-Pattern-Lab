@@ -17,8 +17,10 @@ function preload() {
 }
 
 function setup() {
-  // Create the canvas for SVG generation
-  canv = createCanvas(460, 3142, SVG);
+  // Create the canvas with a default size (we'll adjust it later)
+  let defaultSize = '320ml';
+  let dimensions = window.canvasSizes[defaultSize];
+  canv = createCanvas(dimensions.width, dimensions.height, SVG);
   background(255); // White background to prevent blank screen
 
   // Ensure that the UI is created before generating the pattern
@@ -27,8 +29,8 @@ function setup() {
   // Generate a random seed and update the seed input field
   generateRandomSeed();
 
-  // Call generatePattern to draw the initial pattern with default pattern type
-  generatePattern('essential');
+  // Call generatePattern to draw the initial pattern with default pattern type and size
+  generatePattern('essential', defaultSize);
 }
 
 function applySeed() {
@@ -36,7 +38,17 @@ function applySeed() {
   noiseSeed(seed);
 }
 
-function generatePattern(patternType) {
+function generatePattern(patternType, canvasSize) {
+  // Get the dimensions from the configuration object
+  let dimensions = window.canvasSizes[canvasSize];
+  if (!dimensions) {
+    console.error(`Canvas size '${canvasSize}' not found in configuration.`);
+    return;
+  }
+
+  // Resize the canvas based on the selected size
+  resizeCanvas(dimensions.width, dimensions.height);
+
   // Clear the canvas
   clear();
   background(255); // White background
