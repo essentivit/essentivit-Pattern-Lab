@@ -9,9 +9,17 @@ const UIElements = {
   patternSelect: null,
   uiContainer: null,
   sizeSelect: null,
-  configurationsSelect: null, // Added
-  saveConfigButton: null,     // Added
+  configurationsSelect: null,
+  saveConfigButton: null,
+  seedHistoryDisplay: null, // Added
+  paletteSelect: null,
+  palette2Select: null,
+  palette1SwatchContainer: null,
+  palette2SwatchContainer: null,
 };
+
+// Global array to store the last 5 seeds
+window.seedHistory = [];
 
 // Main function to create the UI
 function createUI() {
@@ -22,12 +30,13 @@ function createUI() {
   createLogo(UIElements.uiContainer);
   createInstructions(UIElements.uiContainer);
   createSeedInput(UIElements.uiContainer);
+  createSeedHistoryDisplay(UIElements.uiContainer); // Added
   createPatternSelect(UIElements.uiContainer);
   createSizeSelect(UIElements.uiContainer);
-  createPaletteSelect(UIElements.uiContainer);   // Palette 1 dropdown
-  createPalette2Select(UIElements.uiContainer);  // Palette 2 dropdown
-  createConfigurationsSelect(UIElements.uiContainer); // Configuration dropdown
-  createSaveConfigurationButton(UIElements.uiContainer); // Save configuration button
+  createPaletteSelect(UIElements.uiContainer);
+  createPalette2Select(UIElements.uiContainer);
+  createConfigurationsSelect(UIElements.uiContainer);
+  createSaveConfigurationButton(UIElements.uiContainer);
   createButtons(UIElements.uiContainer);
   fetchAndDisplayVersion(UIElements.uiContainer);
 
@@ -38,8 +47,12 @@ function createUI() {
 
 // Function to remove existing UI elements
 function removeExistingElements() {
-  let existingElements = selectAll("input, button, label, p, img");
-  existingElements.forEach(el => el.remove());
+  let existingElements = selectAll("input, button, label, p, img, div");
+  existingElements.forEach(el => {
+    if (el.id() !== 'defaultCanvas0') {  // Ensure the canvas is not removed
+      el.remove();
+    }
+  });
 }
 
 // Function to style the body element
@@ -88,10 +101,6 @@ function createLogo(parent) {
 function createInstructions(parent) {
   UIElements.instructionsLabel = createP(
     "Instructions:<br>1. Enter a seed value or leave blank for random.<br>" +
-    "2. Select a pattern from the dropdown.<br>" +
-    "3. Select the canvas size.<br>" +
-    "4. Press 'Generate' to create the pattern.<br>" +
-    "5. Press 'Save SVG' to save the current pattern.<br>" +
     "Note: Deleting the seed will generate a new random seed."
   );
   UIElements.instructionsLabel.style('font-size', '16px');
@@ -118,6 +127,56 @@ function createSeedInput(parent) {
   UIElements.seedInput.style('border', '1px solid #ccc');
   UIElements.seedInput.style('width', '80%');
   UIElements.seedInput.parent(seedContainer);
+}
+
+// Function to create and style the seed history display
+function createSeedHistoryDisplay(parent) {
+  let seedHistoryContainer = createDiv().style('margin-bottom', '20px');
+  seedHistoryContainer.parent(parent);
+
+  let seedHistoryLabel = createElement("label", "Last 5 Seeds: ");
+  seedHistoryLabel.style('font-weight', '600');
+  seedHistoryLabel.style('font-size', '14px');
+  seedHistoryLabel.parent(seedHistoryContainer);
+
+  UIElements.seedHistoryDisplay = createElement('pre', '');
+  UIElements.seedHistoryDisplay.style('padding', '12px');
+  UIElements.seedHistoryDisplay.style('margin-left', '10px');
+  UIElements.seedHistoryDisplay.style('border-radius', '6px');
+  UIElements.seedHistoryDisplay.style('border', '1px solid #ccc');
+  UIElements.seedHistoryDisplay.style('background-color', '#f9f9f9');
+  UIElements.seedHistoryDisplay.style('width', '80%');
+  UIElements.seedHistoryDisplay.style('height', '100px');
+  UIElements.seedHistoryDisplay.style('overflow-y', 'auto');
+  UIElements.seedHistoryDisplay.style('text-align', 'left');
+  UIElements.seedHistoryDisplay.style('font-family', 'monospace');
+  UIElements.seedHistoryDisplay.style('white-space', 'pre-wrap');
+  UIElements.seedHistoryDisplay.style('word-wrap', 'break-word');
+  UIElements.seedHistoryDisplay.parent(seedHistoryContainer);
+}
+
+// Function to update the seed history
+function updateSeedHistory(seed) {
+  // Add the seed to the beginning of the history
+  window.seedHistory.unshift(seed);
+  // Keep only the last 5 seeds
+  if (window.seedHistory.length > 5) {
+    window.seedHistory.pop();
+  }
+  // Update the display
+  displaySeedHistory();
+}
+
+// Function to display the seed history
+function displaySeedHistory() {
+  if (UIElements.seedHistoryDisplay) {
+    // Clear the current content
+    UIElements.seedHistoryDisplay.html('');
+    // Display the seeds
+    window.seedHistory.forEach((s) => {
+      UIElements.seedHistoryDisplay.html(`${s}\n`, true); // Append with line breaks
+    });
+  }
 }
 
 // Function to create and style the pattern selection dropdown
@@ -237,12 +296,13 @@ function updatePaletteSwatch(paletteType, selectedPaletteName) {
 
   // Create and append colour swatches
   selectedPalette.colors.forEach(color => {
-    let swatch = createDiv().style('display', 'inline-block')
-                           .style('width', '20px')
-                           .style('height', '20px')
-                           .style('background-color', `rgb(${color[0]}, ${color[1]}, ${color[2]})`)
-                           .style('margin-right', '5px')
-                           .style('border', '1px solid #ccc');
+    let swatch = createDiv()
+      .style('display', 'inline-block')
+      .style('width', '20px')
+      .style('height', '20px')
+      .style('background-color', `rgb(${color[0]}, ${color[1]}, ${color[2]})`)
+      .style('margin-right', '5px')
+      .style('border', '1px solid #ccc');
     swatch.parent(swatchContainer);
   });
 }
@@ -431,6 +491,7 @@ function handleGenerateButtonPress() {
     window.generateRandomSeed();
   } else {
     seed = int(UIElements.seedInput.value());
+    updateSeedHistory(seed); // Update the seed history
   }
 
   let selectedPattern = UIElements.patternSelect.value();
@@ -442,6 +503,20 @@ function handleGenerateButtonPress() {
   } else if (selectedPattern === 'Pet') {
     window.generatePattern('pet', selectedSize);
   }
+}
+
+// Modify the generateRandomSeed function to update the seed history
+function generateRandomSeed() {
+  let date = new Date();
+  seed = date.getTime(); // Generate random seed based on the current time
+
+  // Update the seed input field if it exists
+  if (window.UIElements && window.UIElements.seedInput) {
+    window.UIElements.seedInput.value(seed);
+  }
+
+  // Update the seed history
+  updateSeedHistory(seed);
 }
 
 // Function to fetch and display the version information
@@ -464,3 +539,4 @@ function fetchAndDisplayVersion(parent) {
 // Expose UIElements and necessary functions globally
 window.UIElements = UIElements;
 window.updateConfigurationsDropdown = updateConfigurationsDropdown;
+window.generateRandomSeed = generateRandomSeed; // Ensure generateRandomSeed is accessible
