@@ -77,6 +77,10 @@ function generatePattern(patternType, canvasSize) {
   let palette1Index = palettes.palettes.findIndex(p => p.name === selectedPalette1Name);
   let palette2Index = palettes.palettes.findIndex(p => p.name === selectedPalette2Name);
 
+  // Set palette1 and palette2 as global variables for saving later
+  palette1 = selectedPalette1Name;
+  palette2 = selectedPalette2Name;
+
   // Call the appropriate pattern function based on the selected pattern type
   if (patternType === 'essential') {
     if (typeof window.drawEssentialPattern === 'function') {
@@ -94,7 +98,12 @@ function generatePattern(patternType, canvasSize) {
 }
 
 function saveArt() {
-  save(seed + "_p1_" + palette1 + "_p2_" + palette2 + ".svg");
+  // Ensure palette1 and palette2 are valid strings before saving
+  let palette1Str = palette1 ? palette1 : 'undefined';
+  let palette2Str = palette2 ? palette2 : 'undefined';
+
+  // Save the artwork with the seed and palette names
+  save(seed + "_p1_" + palette1Str + "_p2_" + palette2Str + ".svg");
 }
 
 // Function to generate a random seed
@@ -125,8 +134,3 @@ window.generatePattern = generatePattern;
 window.saveArt = saveArt;
 window.generateRandomSeed = generateRandomSeed;
 window.configurations = configurations; // Expose configurations
-
-// Include your pattern drawing functions here (e.g., drawEssentialPattern, drawPetPattern)
-// Make sure they are attached to the window object, as in:
-// window.drawEssentialPattern = drawEssentialPattern;
-// window.drawPetPattern = drawPetPattern;
