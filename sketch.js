@@ -60,9 +60,9 @@ function generatePattern(patternType, canvasSize) {
   applySeed();
 
   let factor = 0;
-  let numb = floor(random(3, 20));
+  let numb = floor(random(3,6)); // Default: let numb = floor(random(3, 20));
   size = width / numb;
-  largest = floor(random(1, 10));
+  largest = floor(random(1, 3)); // Default: largest = floor(random(1, 10));
   alph = random(120, 220);
   if (random(15) < 1) {
     alph = 255;

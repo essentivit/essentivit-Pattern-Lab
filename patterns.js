@@ -1,3 +1,5 @@
+// File: patterns.js
+
 // Draw the standard essential vitamin pattern
 function drawEssentialPattern(palettes, size, largest, alph, factor, palette1Index, palette2Index) {
     // Get the selected palettes
@@ -147,7 +149,7 @@ function drawEssentialPattern(palettes, size, largest, alph, factor, palette1Ind
   
         // Randomly decide whether to draw a pet icon or a triangle
         let drawIconChance = random(1);
-        if (drawIconChance < 0.15) { // 15% chance to draw a pet icon
+        if (drawIconChance < 0.20) { // 20% chance to draw a pet icon
           let petIcon = random(petIcons);
           petIcon(i, j, size2, r1, g1, b1, alph, r2, g2, b2);
         } else {
