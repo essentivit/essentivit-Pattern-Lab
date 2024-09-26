@@ -6,9 +6,10 @@ let canv, size, largest, seed = 0;
 let palette1, palette2, alph;
 
 let palettes; // This will store the palettes from JSON
+let configurations = { configurations: [] }; // Added variable to store configurations
 
 function preload() {
-  // Load the palettes JSON file instead of the CSV
+  // Load the palettes JSON file
   palettes = loadJSON("palettes.json", () => {
     console.log("palettes.json loaded successfully");
   }, (err) => {
@@ -17,6 +18,9 @@ function preload() {
 }
 
 function setup() {
+  // Load configurations from localStorage first
+  loadConfigurations(); // New function to load configurations
+
   // Create the canvas with a default size (we'll adjust it later)
   let defaultSize = '320ml';
   let dimensions = window.canvasSizes[defaultSize];
@@ -24,7 +28,7 @@ function setup() {
   background(255); // White background to prevent blank screen
 
   // Ensure that the UI is created before generating the pattern
-  createUI();  // Defined in ui.js
+  createUI(); // Defined in ui.js
 
   // Generate a random seed and update the seed input field
   generateRandomSeed();
@@ -93,7 +97,7 @@ function saveArt() {
   save(seed + "_p1_" + palette1 + "_p2_" + palette2 + ".svg");
 }
 
-// Moved generateRandomSeed to sketch.js and exposed it globally
+// Function to generate a random seed
 function generateRandomSeed() {
   let date = new Date();
   seed = date.getTime(); // Generate random seed based on the current time
@@ -104,7 +108,25 @@ function generateRandomSeed() {
   }
 }
 
+// Load configurations from localStorage
+function loadConfigurations() {
+  let configsJSON = localStorage.getItem('configurations');
+  if (configsJSON) {
+    configurations = JSON.parse(configsJSON);
+  } else {
+    configurations = { configurations: [] };
+  }
+  // Expose configurations globally
+  window.configurations = configurations;
+}
+
 // Ensure global access to functions for ui.js
 window.generatePattern = generatePattern;
 window.saveArt = saveArt;
 window.generateRandomSeed = generateRandomSeed;
+window.configurations = configurations; // Expose configurations
+
+// Include your pattern drawing functions here (e.g., drawEssentialPattern, drawPetPattern)
+// Make sure they are attached to the window object, as in:
+// window.drawEssentialPattern = drawEssentialPattern;
+// window.drawPetPattern = drawPetPattern;

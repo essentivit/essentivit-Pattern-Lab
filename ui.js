@@ -9,6 +9,8 @@ const UIElements = {
   patternSelect: null,
   uiContainer: null,
   sizeSelect: null,
+  configurationsSelect: null, // Added
+  saveConfigButton: null,     // Added
 };
 
 // Main function to create the UI
@@ -22,8 +24,10 @@ function createUI() {
   createSeedInput(UIElements.uiContainer);
   createPatternSelect(UIElements.uiContainer);
   createSizeSelect(UIElements.uiContainer);
-  createPaletteSelect(UIElements.uiContainer);  // Palette 1 dropdown
-  createPalette2Select(UIElements.uiContainer); // Palette 2 dropdown
+  createPaletteSelect(UIElements.uiContainer);   // Palette 1 dropdown
+  createPalette2Select(UIElements.uiContainer);  // Palette 2 dropdown
+  createConfigurationsSelect(UIElements.uiContainer); // Configuration dropdown
+  createSaveConfigurationButton(UIElements.uiContainer); // Save configuration button
   createButtons(UIElements.uiContainer);
   fetchAndDisplayVersion(UIElements.uiContainer);
 
@@ -161,90 +165,6 @@ function createSizeSelect(parent) {
   }
 }
 
-// Function to create and style the generate and save buttons
-function createButtons(parent) {
-  let buttonContainer = createDiv()
-    .style('display', 'flex')
-    .style('justify-content', 'center');
-  buttonContainer.style('gap', '20px');
-  buttonContainer.style('margin-top', '20px');
-  buttonContainer.parent(parent);
-
-  // Generate Button
-  UIElements.generateButton = createButton("Generate");
-  UIElements.generateButton.style('padding', '12px 30px');
-  UIElements.generateButton.style('background-color', '#4CAF50');
-  UIElements.generateButton.style('border', 'none');
-  UIElements.generateButton.style('border-radius', '6px');
-  UIElements.generateButton.style('color', '#fff');
-  UIElements.generateButton.style('font-weight', '600');
-  UIElements.generateButton.style('cursor', 'pointer');
-  UIElements.generateButton.style('transition', 'background-color 0.3s ease');
-  UIElements.generateButton.mouseOver(() =>
-    UIElements.generateButton.style('background-color', '#45a049')
-  );
-  UIElements.generateButton.mouseOut(() =>
-    UIElements.generateButton.style('background-color', '#4CAF50')
-  );
-  UIElements.generateButton.parent(buttonContainer);
-  UIElements.generateButton.mousePressed(handleGenerateButtonPress);
-
-  // Save Button
-  UIElements.saveButton = createButton("Save SVG");
-  UIElements.saveButton.style('padding', '12px 30px');
-  UIElements.saveButton.style('background-color', '#007BFF');
-  UIElements.saveButton.style('border', 'none');
-  UIElements.saveButton.style('border-radius', '6px');
-  UIElements.saveButton.style('color', '#fff');
-  UIElements.saveButton.style('font-weight', '600');
-  UIElements.saveButton.style('cursor', 'pointer');
-  UIElements.saveButton.style('transition', 'background-color 0.3s ease');
-  UIElements.saveButton.mouseOver(() =>
-    UIElements.saveButton.style('background-color', '#0056b3')
-  );
-  UIElements.saveButton.mouseOut(() =>
-    UIElements.saveButton.style('background-color', '#007BFF')
-  );
-  UIElements.saveButton.parent(buttonContainer);
-  UIElements.saveButton.mousePressed(() => window.saveArt());
-}
-
-// Event handler for the generate button
-function handleGenerateButtonPress() {
-  if (UIElements.seedInput.value() === "") {
-    window.generateRandomSeed();
-  } else {
-    seed = int(UIElements.seedInput.value());
-  }
-
-  let selectedPattern = UIElements.patternSelect.value();
-  let selectedSize = UIElements.sizeSelect.value(); // Get selected canvas size
-
-  // Pass selectedSize to generatePattern
-  if (selectedPattern === 'Standard') {
-    window.generatePattern('essential', selectedSize);
-  } else if (selectedPattern === 'Pet') {
-    window.generatePattern('pet', selectedSize);
-  }
-}
-
-// Function to fetch and display the version information
-function fetchAndDisplayVersion(parent) {
-  fetch('/version.json')
-    .then(response => response.json())
-    .then(data => {
-      let versionLabel = createP(`Version: ${data.version}`);
-      versionLabel.style('font-size', '14px');
-      versionLabel.style('color', '#777');
-      versionLabel.style('margin-top', '10px');
-      versionLabel.style('font-weight', 'bold');
-      versionLabel.parent(parent);
-    })
-    .catch(err => {
-      console.error('Error fetching version:', err);
-    });
-}
-
 // Function to create and style the palette selection dropdown with swatches
 function createPaletteSelect(parent) {
   let paletteContainer = createDiv().style('margin-bottom', '20px');
@@ -327,5 +247,220 @@ function updatePaletteSwatch(paletteType, selectedPaletteName) {
   });
 }
 
-// Expose UIElements globally
+// Function to create and style the configuration selection dropdown
+function createConfigurationsSelect(parent) {
+  let configContainer = createDiv().style('margin-bottom', '20px');
+  configContainer.parent(parent);
+
+  let configLabel = createElement("label", "Configuration: ");
+  configLabel.style('font-weight', '600');
+  configLabel.style('font-size', '14px');
+  configLabel.parent(configContainer);
+
+  UIElements.configurationsSelect = createSelect();
+  UIElements.configurationsSelect.style('padding', '12px');
+  UIElements.configurationsSelect.style('margin-left', '10px');
+  UIElements.configurationsSelect.style('border-radius', '6px');
+  UIElements.configurationsSelect.style('border', '1px solid #ccc');
+  UIElements.configurationsSelect.style('width', '80%');
+  UIElements.configurationsSelect.parent(configContainer);
+
+  // Add default option
+  UIElements.configurationsSelect.option('Select a configuration', '');
+
+  // Populate the configurations dropdown
+  updateConfigurationsDropdown();
+
+  // Event listener for configuration selection
+  UIElements.configurationsSelect.changed(() => {
+    let selectedConfigId = UIElements.configurationsSelect.value();
+    if (selectedConfigId) {
+      loadConfiguration(selectedConfigId);
+    }
+  });
+}
+
+// Function to update the configurations dropdown
+function updateConfigurationsDropdown() {
+  // Clear existing options
+  UIElements.configurationsSelect.html('');
+  // Add default option
+  UIElements.configurationsSelect.option('Select a configuration', '');
+
+  if (window.configurations && window.configurations.configurations.length > 0) {
+    for (let config of window.configurations.configurations) {
+      let optionLabel = `${config.description} (${config.id})`;
+      UIElements.configurationsSelect.option(optionLabel, config.id);
+    }
+    UIElements.configurationsSelect.removeAttribute('disabled');
+  } else {
+    UIElements.configurationsSelect.attribute('disabled', true);
+  }
+}
+
+// Function to create and style the 'Save Configuration' button
+function createSaveConfigurationButton(parent) {
+  UIElements.saveConfigButton = createButton("Save Configuration");
+  UIElements.saveConfigButton.style('padding', '12px 30px');
+  UIElements.saveConfigButton.style('background-color', '#FFA500'); // Orange color
+  UIElements.saveConfigButton.style('border', 'none');
+  UIElements.saveConfigButton.style('border-radius', '6px');
+  UIElements.saveConfigButton.style('color', '#fff');
+  UIElements.saveConfigButton.style('font-weight', '600');
+  UIElements.saveConfigButton.style('cursor', 'pointer');
+  UIElements.saveConfigButton.style('transition', 'background-color 0.3s ease');
+  UIElements.saveConfigButton.mouseOver(() =>
+    UIElements.saveConfigButton.style('background-color', '#FF8C00')
+  );
+  UIElements.saveConfigButton.mouseOut(() =>
+    UIElements.saveConfigButton.style('background-color', '#FFA500')
+  );
+  UIElements.saveConfigButton.parent(parent);
+  UIElements.saveConfigButton.mousePressed(() => handleSaveConfiguration());
+}
+
+// Function to create and style the generate and save buttons
+function createButtons(parent) {
+  let buttonContainer = createDiv()
+    .style('display', 'flex')
+    .style('justify-content', 'center');
+  buttonContainer.style('gap', '20px');
+  buttonContainer.style('margin-top', '20px');
+  buttonContainer.parent(parent);
+
+  // Generate Button
+  UIElements.generateButton = createButton("Generate");
+  UIElements.generateButton.style('padding', '12px 30px');
+  UIElements.generateButton.style('background-color', '#4CAF50');
+  UIElements.generateButton.style('border', 'none');
+  UIElements.generateButton.style('border-radius', '6px');
+  UIElements.generateButton.style('color', '#fff');
+  UIElements.generateButton.style('font-weight', '600');
+  UIElements.generateButton.style('cursor', 'pointer');
+  UIElements.generateButton.style('transition', 'background-color 0.3s ease');
+  UIElements.generateButton.mouseOver(() =>
+    UIElements.generateButton.style('background-color', '#45a049')
+  );
+  UIElements.generateButton.mouseOut(() =>
+    UIElements.generateButton.style('background-color', '#4CAF50')
+  );
+  UIElements.generateButton.parent(buttonContainer);
+  UIElements.generateButton.mousePressed(handleGenerateButtonPress);
+
+  // Save Button
+  UIElements.saveButton = createButton("Save SVG");
+  UIElements.saveButton.style('padding', '12px 30px');
+  UIElements.saveButton.style('background-color', '#007BFF');
+  UIElements.saveButton.style('border', 'none');
+  UIElements.saveButton.style('border-radius', '6px');
+  UIElements.saveButton.style('color', '#fff');
+  UIElements.saveButton.style('font-weight', '600');
+  UIElements.saveButton.style('cursor', 'pointer');
+  UIElements.saveButton.style('transition', 'background-color 0.3s ease');
+  UIElements.saveButton.mouseOver(() =>
+    UIElements.saveButton.style('background-color', '#0056b3')
+  );
+  UIElements.saveButton.mouseOut(() =>
+    UIElements.saveButton.style('background-color', '#007BFF')
+  );
+  UIElements.saveButton.parent(buttonContainer);
+  UIElements.saveButton.mousePressed(() => window.saveArt());
+}
+
+// Function to handle saving a configuration
+function handleSaveConfiguration() {
+  // Prompt the user for a description
+  let description = prompt("Enter a description for this configuration:");
+  if (description === null || description.trim() === "") {
+    alert("Description cannot be empty.");
+    return;
+  }
+
+  // Collect current settings
+  let newConfig = {
+    id: generateUniqueId(),
+    seed: parseInt(UIElements.seedInput.value()),
+    palette1: UIElements.paletteSelect.value(),
+    palette2: UIElements.palette2Select.value(),
+    patternType: UIElements.patternSelect.value() === 'Pet' ? 'pet' : 'essential',
+    canvasSize: UIElements.sizeSelect.value(),
+    timestamp: new Date().toISOString(),
+    description: description.trim()
+  };
+
+  // Add to configurations
+  if (!window.configurations) window.configurations = { configurations: [] };
+  window.configurations.configurations.push(newConfig);
+
+  // Update configurations in localStorage
+  localStorage.setItem('configurations', JSON.stringify(window.configurations));
+
+  // Update configurations dropdown
+  updateConfigurationsDropdown();
+
+  alert('Configuration saved successfully.');
+}
+
+// Function to generate a unique ID for the configuration
+function generateUniqueId() {
+  return 'config' + Date.now();
+}
+
+// Function to load the selected configuration
+function loadConfiguration(configId) {
+  let config = window.configurations.configurations.find(c => c.id === configId);
+  if (config) {
+    // Update UI elements
+    UIElements.seedInput.value(config.seed.toString());
+    UIElements.paletteSelect.value(config.palette1);
+    UIElements.palette2Select.value(config.palette2);
+    UIElements.patternSelect.value(config.patternType === 'pet' ? 'Pet' : 'Standard');
+    UIElements.sizeSelect.value(config.canvasSize);
+
+    // Update swatches
+    updatePaletteSwatch('palette1', UIElements.paletteSelect.value());
+    updatePaletteSwatch('palette2', UIElements.palette2Select.value());
+  } else {
+    console.error(`Configuration with id ${configId} not found.`);
+  }
+}
+
+// Event handler for the generate button
+function handleGenerateButtonPress() {
+  if (UIElements.seedInput.value() === "") {
+    window.generateRandomSeed();
+  } else {
+    seed = int(UIElements.seedInput.value());
+  }
+
+  let selectedPattern = UIElements.patternSelect.value();
+  let selectedSize = UIElements.sizeSelect.value();
+
+  // Pass selectedSize to generatePattern
+  if (selectedPattern === 'Standard') {
+    window.generatePattern('essential', selectedSize);
+  } else if (selectedPattern === 'Pet') {
+    window.generatePattern('pet', selectedSize);
+  }
+}
+
+// Function to fetch and display the version information
+function fetchAndDisplayVersion(parent) {
+  fetch('/version.json')
+    .then(response => response.json())
+    .then(data => {
+      let versionLabel = createP(`Version: ${data.version}`);
+      versionLabel.style('font-size', '14px');
+      versionLabel.style('color', '#777');
+      versionLabel.style('margin-top', '10px');
+      versionLabel.style('font-weight', 'bold');
+      versionLabel.parent(parent);
+    })
+    .catch(err => {
+      console.error('Error fetching version:', err);
+    });
+}
+
+// Expose UIElements and necessary functions globally
 window.UIElements = UIElements;
+window.updateConfigurationsDropdown = updateConfigurationsDropdown;
