@@ -488,10 +488,11 @@ function loadConfiguration(configId) {
 // Event handler for the generate button
 function handleGenerateButtonPress() {
   if (UIElements.seedInput.value() === "") {
+    // If seed is blank, generate a random one and update the history inside generateRandomSeed
     window.generateRandomSeed();
   } else {
     seed = int(UIElements.seedInput.value());
-    updateSeedHistory(seed); // Update the seed history
+    updateSeedHistory(seed); // Update the seed history if user provided a seed
   }
 
   let selectedPattern = UIElements.patternSelect.value();
@@ -515,8 +516,8 @@ function generateRandomSeed() {
     window.UIElements.seedInput.value(seed);
   }
 
-  // Update the seed history
-  updateSeedHistory(seed);
+  // **Immediately update the seed history**
+  updateSeedHistory(seed); // Update the seed history after generating random seed
 }
 
 // Function to fetch and display the version information
